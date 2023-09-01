@@ -18,6 +18,8 @@ Original Author: Shay Gal-on
 #include "coremark.h"
 #include "core_portme.h"
 
+#include <tonc.h>
+
 #if VALIDATION_RUN
 volatile ee_s32 seed1_volatile = 0x3415;
 volatile ee_s32 seed2_volatile = 0x3415;
@@ -42,10 +44,8 @@ volatile ee_s32 seed5_volatile = 0;
    time.h and windows.h definitions included.
 */
 CORETIMETYPE
-barebones_clock()
-{
-#error \
-    "You must implement a method to measure time in barebones_clock()! This function should return current time.\n"
+barebones_clock() {
+  return (CORETIMETYPE) ((REG_TM3D << 16) | REG_TM2D);
 }
 /* Define : TIMER_RES_DIVIDER
         Divider to trade off timer resolution and total time that can be
@@ -57,6 +57,7 @@ barebones_clock()
         */
 #define GETMYTIME(_t)              (*_t = barebones_clock())
 #define MYTIMEDIFF(fin, ini)       ((fin) - (ini))
+#define CLOCKS_PER_SEC             16780000
 #define TIMER_RES_DIVIDER          1
 #define SAMPLE_TIME_IMPLEMENTATION 1
 #define EE_TICKS_PER_SEC           (CLOCKS_PER_SEC / TIMER_RES_DIVIDER)
@@ -75,7 +76,8 @@ static CORETIMETYPE start_time_val, stop_time_val;
 void
 start_time(void)
 {
-    GETMYTIME(&start_time_val);
+    start_time_val = 0;
+    profile_start();
 }
 /* Function : stop_time
         This function will be called right after ending the timed portion of the
@@ -88,7 +90,7 @@ start_time(void)
 void
 stop_time(void)
 {
-    GETMYTIME(&stop_time_val);
+    stop_time_val = profile_stop();
 }
 /* Function : get_time
         Return an abstract "ticks" number that signifies time on the system.
@@ -102,8 +104,7 @@ stop_time(void)
 CORE_TICKS
 get_time(void)
 {
-    CORE_TICKS elapsed
-        = (CORE_TICKS)(MYTIMEDIFF(stop_time_val, start_time_val));
+    CORE_TICKS elapsed = (CORE_TICKS)stop_time_val;
     return elapsed;
 }
 /* Function : time_in_secs
@@ -129,8 +130,12 @@ ee_u32 default_num_contexts = 1;
 void
 portable_init(core_portable *p, int *argc, char *argv[])
 {
-#error \
-    "Call board initialization routines in portable init (if needed), in particular initialize UART!\n"
+    REG_DISPCNT= DCNT_MODE0 | DCNT_BG0;
+
+    irq_init(NULL);
+    irq_add(II_VBLANK, NULL);
+
+    tte_init_se_default(0, BG_CBB(0)|BG_SBB(31));
 
     (void)argc; // prevent unused warning
     (void)argv; // prevent unused warning

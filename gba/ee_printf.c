@@ -17,6 +17,8 @@ limitations under the License.
 #include <coremark.h>
 #include <stdarg.h>
 
+#include <tonc.h>
+
 #define ZEROPAD   (1 << 0) /* Pad with zero */
 #define SIGN      (1 << 1) /* Unsigned/signed long */
 #define PLUS      (1 << 2) /* Show plus */
@@ -662,7 +664,7 @@ ee_vsprintf(char *buf, const char *fmt, va_list args)
 void
 uart_send_char(char c)
 {
-#error "You must implement the method uart_send_char to use this file!\n";
+  // #error "You must implement the method uart_send_char to use this file!\n";
     /*	Output of a char to a UART usually follows the following model:
             Wait until UART is ready
             Write char to UART
@@ -688,13 +690,14 @@ ee_printf(const char *fmt, ...)
     va_start(args, fmt);
     ee_vsprintf(buf, fmt, args);
     va_end(args);
-    p = buf;
-    while (*p)
-    {
-        uart_send_char(*p);
-        n++;
-        p++;
-    }
+    tte_write(buf);
+    /* p = buf; */
+    /* while (*p) */
+    /* { */
+    /*   // uart_send_char(*p); */
+    /*     n++; */
+    /*     p++; */
+    /* } */
 
     return n;
 }

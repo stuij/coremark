@@ -16,36 +16,40 @@
 
 #File : core_portme.mak
 
+ifeq ($(strip $(DEVKITARM)),)
+$(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
+endif
+
 # Flag : OUTFLAG
 #	Use this flag to define how to to get an executable (e.g -o)
 OUTFLAG= -o
 # Flag : CC
 #	Use this flag to define compiler to use
-CC 		= gcc
+CC 		= arm-none-eabi-gcc
 # Flag : LD
 #	Use this flag to define compiler to use
-LD		= gld
+LD		= arm-none-eabi-gcc
 # Flag : AS
 #	Use this flag to define compiler to use
-AS		= gas
+AS		= arm-none-eabi-as
 # Flag : CFLAGS
 #	Use this flag to define compiler options. Note, you can add compiler options from the command line using XCFLAGS="other flags"
-PORT_CFLAGS = -O0 -g
-FLAGS_STR = "$(PORT_CFLAGS) $(XCFLAGS) $(XLFLAGS) $(LFLAGS_END)"
-CFLAGS = $(PORT_CFLAGS) -I$(PORT_DIR) -I. -DFLAGS_STR=\"$(FLAGS_STR)\" 
+PORT_CFLAGS = -O2 -mthumb -mlong-calls -I$(DEVKITARM)/../libtonc/include
+FLAGS_STR = "$(PORT_CFLAGS) $(XCFLAGS) $(LFLAGS) $(XLFLAGS) $(LFLAGS_END)"
+CFLAGS = $(PORT_CFLAGS) -specs=gba.specs -I$(PORT_DIR) -I. -DFLAGS_STR=\"$(FLAGS_STR)\"
 #Flag : LFLAGS_END
 #	Define any libraries needed for linking or other flags that should come at the end of the link line (e.g. linker scripts). 
 #	Note : On certain platforms, the default clock_gettime implementation is supported but requires linking of librt.
-SEPARATE_COMPILE=1
+# SEPARATE_COMPILE=1
 # Flag : SEPARATE_COMPILE
 # You must also define below how to create an object file, and how to link.
 OBJOUT 	= -o
-LFLAGS 	= 
-ASFLAGS =
+LFLAGS 	= -specs=gba.specs
+ASFLAGS = -mthumb -mlong-calls
 OFLAG 	= -o
 COUT 	= -c
 
-LFLAGS_END = 
+LFLAGS_END = -L$(DEVKITARM)/../libtonc/lib -ltonc
 # Flag : PORT_SRCS
 # 	Port specific source files can be added here
 #	You may also need cvt.c if the fcvt functions are not provided as intrinsics by your compiler!

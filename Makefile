@@ -23,7 +23,7 @@ run: $(OUTFILE) rerun score
 score:
 	@echo "Check run1.log and run2.log for results."
 	@echo "See README.md for run and reporting rules." 
-	
+
 ifndef PORT_DIR
 # Ports for a couple of common self hosted platforms
 UNAME=$(shell if command -v uname 2> /dev/null; then uname ; fi)
@@ -80,7 +80,7 @@ $(OPATH)$(PORT_DIR):
 compile: $(OPATH) $(OPATH)$(PORT_DIR) $(OBJS) $(HEADERS) 
 link: compile 
 	$(LD) $(LFLAGS) $(XLFLAGS) $(OBJS) $(LOUTCMD)
-	
+
 else
 
 compile: $(OPATH) $(SRCS) $(HEADERS) 
@@ -112,7 +112,7 @@ run1.log run2.log run3.log: load
 	$(MAKE) port_prerun
 	$(RUN) $(OUTFILE) $($(@)-PARAM) > $(OPATH)$@
 	$(MAKE) port_postrun
-	
+
 .PHONY: gen_pgo_data
 gen_pgo_data: run3.log
 
@@ -129,7 +129,7 @@ clean:
 .PHONY: force_rebuild
 force_rebuild:
 	echo "Forcing Rebuild"
-	
+
 .PHONY: check
 check:
 	md5sum -c coremark.md5 
