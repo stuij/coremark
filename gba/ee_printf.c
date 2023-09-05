@@ -17,6 +17,7 @@ limitations under the License.
 #include <coremark.h>
 #include <stdarg.h>
 
+#include <string.h>
 #include <tonc.h>
 
 #define ZEROPAD   (1 << 0) /* Pad with zero */
@@ -31,16 +32,16 @@ limitations under the License.
 
 static char *    digits       = "0123456789abcdefghijklmnopqrstuvwxyz";
 static char *    upper_digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-static ee_size_t strnlen(const char *s, ee_size_t count);
+/* static ee_size_t strnlen(const char *s, ee_size_t count); */
 
-static ee_size_t
-strnlen(const char *s, ee_size_t count)
-{
-    const char *sc;
-    for (sc = s; *sc != '\0' && count--; ++sc)
-        ;
-    return sc - s;
-}
+/* static ee_size_t */
+/* strnlen(const char *s, ee_size_t count) */
+/* { */
+/*     const char *sc; */
+/*     for (sc = s; *sc != '\0' && count--; ++sc) */
+/*         ; */
+/*     return sc - s; */
+/* } */
 
 static int
 skip_atoi(const char **s)
@@ -680,6 +681,16 @@ uart_send_char(char c)
     */
 }
 
+
+#define REG_DEBUG_FLAGS (vu16*) 0x4FFF700
+#define REG_DEBUG_STRING (char*) 0x4FFF600
+
+#define MGBA_LOG_FATAL 0
+#define MGBA_LOG_ERROR 1
+#define MGBA_LOG_WARN 2
+#define MGBA_LOG_INFO 3
+#define MGBA_LOG_DEBUG 4
+
 int
 ee_printf(const char *fmt, ...)
 {
@@ -690,6 +701,16 @@ ee_printf(const char *fmt, ...)
     va_start(args, fmt);
     ee_vsprintf(buf, fmt, args);
     va_end(args);
+
+    int len = strlen(buf);
+    strncpy(REG_DEBUG_STRING, buf, len);
+	*REG_DEBUG_FLAGS = MGBA_LOG_INFO | 0x100;
+
+    uint y_pos = tte_get_context()->cursorY;
+
+    // if (y_pos > 140)
+    //  tte_write("#{P:0,0}");		// Goto (10, 10).
+
     tte_write(buf);
     /* p = buf; */
     /* while (*p) */

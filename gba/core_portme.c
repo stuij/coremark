@@ -127,6 +127,14 @@ ee_u32 default_num_contexts = 1;
         Target specific initialization code
         Test for some common mistakes.
 */
+
+#define REG_DEBUG_ENABLE (vu16*) 0x4FFF780
+
+bool mgba_open(void) {
+	*REG_DEBUG_ENABLE = 0xC0DE;
+	return *REG_DEBUG_ENABLE == 0x1DEA;
+}
+
 void
 portable_init(core_portable *p, int *argc, char *argv[])
 {
@@ -139,6 +147,8 @@ portable_init(core_portable *p, int *argc, char *argv[])
 
     (void)argc; // prevent unused warning
     (void)argv; // prevent unused warning
+
+    mgba_open();
 
     if (sizeof(ee_ptr_int) != sizeof(ee_u8 *))
     {
@@ -159,4 +169,7 @@ void
 portable_fini(core_portable *p)
 {
     p->portable_id = 0;
+
+    while(1)
+      VBlankIntrWait();
 }
