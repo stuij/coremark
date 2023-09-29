@@ -11,45 +11,80 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 # Original Author: Shay Gal-on
 
 #File : core_portme.mak
 
-ifeq ($(strip $(DEVKITARM)),)
-$(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
+# comment out to compile with GCC
+COMPILE_WITH_LLVM=1
+
+ifdef COMPILE_WITH_LLVM
+      ifeq ($(strip $(GBA_LLVM)),)
+      $(error Please set GBA_LLVM in your environment. export GBA_LLVM=<path to gba-llvm installation>)
+      endif
+
+      TONC_BASE=$(GBA_LLVM)/../../libtonc
+      TONC_INCLUDE=$(TONC_BASE)/include
+      TONC_LIB=$(TONC_BASE)/lib
+
+      # Flag : CC
+      #	Use this flag to define compiler to use
+      CC 		= $(GBA_LLVM)/bin/clang
+      # Flag : LD
+      #	Use this flag to define compiler to use
+      LD		= $(GBA_LLVM)/bin/clang
+      # Flag : AS
+      #	Use this flag to define compiler to use
+      AS		= $(GBA_LLVM)/bin/clang
+      #	Use this flag to define compiler options. Note, you can add compiler options from the command line using XCFLAGS="other flags"
+      PORT_CFLAGS = -O3 -mthumb --config armv4t-gba.cfg -Wl,-T,gba_cart.ld # -mllvm -unroll-count=8
+      LFLAGS 	= --config armv4t-gba.cfg
+      ASFLAGS   = -mthumb
+      #Flag : LFLAGS_END
+      #	Define any libraries needed for linking or other flags that should come at the end of the link line (e.g. linker scripts).
+      #	Note : On certain platforms, the default clock_gettime implementation is supported but requires linking of librt.
+      LFLAGS_END = -ltonc
+
+else
+      ifeq ($(strip $(DEVKITARM)),)
+      $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
+      endif
+
+      # Flag : CC
+      #	Use this flag to define compiler to use
+      CC 		= arm-none-eabi-gcc
+      # Flag : LD
+      #	Use this flag to define compiler to use
+      LD		= arm-none-eabi-gcc
+      # Flag : AS
+      #	Use this flag to define compiler to use
+      AS		= arm-none-eabi-as
+      #	Use this flag to define compiler options. Note, you can add compiler options from the command line using XCFLAGS="other flags"
+      PORT_CFLAGS = -O3 -mthumb -mlong-calls -specs=gba.specs -I$(DEVKITARM)/../libtonc/include # -funroll-all-loops
+      LFLAGS 	= -specs=gba.specs
+      ASFLAGS   = -mthumb -mlong-calls
+      #Flag : LFLAGS_END
+      #	Define any libraries needed for linking or other flags that should come at the end of the link line (e.g. linker scripts).
+      #	Note : On certain platforms, the default clock_gettime implementation is supported but requires linking of librt.
+      LFLAGS_END = -L$(DEVKITARM)/../libtonc/lib -ltonc
+
 endif
 
 # Flag : OUTFLAG
 #	Use this flag to define how to to get an executable (e.g -o)
 OUTFLAG= -o
-# Flag : CC
-#	Use this flag to define compiler to use
-CC 		= arm-none-eabi-gcc
-# Flag : LD
-#	Use this flag to define compiler to use
-LD		= arm-none-eabi-gcc
-# Flag : AS
-#	Use this flag to define compiler to use
-AS		= arm-none-eabi-as
-# Flag : CFLAGS
-#	Use this flag to define compiler options. Note, you can add compiler options from the command line using XCFLAGS="other flags"
-PORT_CFLAGS = -O2 -mthumb -mlong-calls -I$(DEVKITARM)/../libtonc/include
 FLAGS_STR = "$(PORT_CFLAGS) $(XCFLAGS) $(LFLAGS) $(XLFLAGS) $(LFLAGS_END)"
-CFLAGS = $(PORT_CFLAGS) -specs=gba.specs -I$(PORT_DIR) -I. -DFLAGS_STR=\"$(FLAGS_STR)\"
-#Flag : LFLAGS_END
-#	Define any libraries needed for linking or other flags that should come at the end of the link line (e.g. linker scripts). 
-#	Note : On certain platforms, the default clock_gettime implementation is supported but requires linking of librt.
-# SEPARATE_COMPILE=1
+# Flag : CFLAGS
+CFLAGS = $(PORT_CFLAGS) -I$(PORT_DIR) -I. -DFLAGS_STR=\"$(FLAGS_STR)\"
+
 # Flag : SEPARATE_COMPILE
-# You must also define below how to create an object file, and how to link.
+# SEPARATE_COMPILE=1
+
 OBJOUT 	= -o
-LFLAGS 	= -specs=gba.specs
-ASFLAGS = -mthumb -mlong-calls
 OFLAG 	= -o
 COUT 	= -c
 
-LFLAGS_END = -L$(DEVKITARM)/../libtonc/lib -ltonc
 # Flag : PORT_SRCS
 # 	Port specific source files can be added here
 #	You may also need cvt.c if the fcvt functions are not provided as intrinsics by your compiler!
