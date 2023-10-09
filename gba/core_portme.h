@@ -65,7 +65,9 @@ Original Author: Shay Gal-on
         Initialize these strings per platform
 */
 #ifndef COMPILER_VERSION
-#ifdef __GNUC__
+#ifdef __clang__
+#define COMPILER_VERSION __VERSION__
+#elif __GNUC__
 #define COMPILER_VERSION "GCC"__VERSION__
 #else
 #define COMPILER_VERSION "Please put compiler version here (e.g. gcc 4.1)"
