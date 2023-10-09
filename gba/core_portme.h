@@ -68,7 +68,7 @@ Original Author: Shay Gal-on
 #ifdef __clang__
 #define COMPILER_VERSION __VERSION__
 #elif __GNUC__
-#define COMPILER_VERSION "GCC"__VERSION__
+#define COMPILER_VERSION "GCC" __VERSION__
 #else
 #define COMPILER_VERSION "Please put compiler version here (e.g. gcc 4.1)"
 #endif
