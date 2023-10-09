@@ -17,16 +17,15 @@
 #File : core_portme.mak
 
 # comment out to compile with GCC
-COMPILE_WITH_LLVM=1
+# Define COMPILE_WITH_LLVM on the cmdline to compile with LLVM
 
 ifdef COMPILE_WITH_LLVM
       ifeq ($(strip $(GBA_LLVM)),)
       $(error Please set GBA_LLVM in your environment. export GBA_LLVM=<path to gba-llvm installation>)
       endif
 
-      TONC_BASE=$(GBA_LLVM)/../../libtonc
-      TONC_INCLUDE=$(TONC_BASE)/include
-      TONC_LIB=$(TONC_BASE)/lib
+      GBAFIX   = $(GBA_LLVM)/bin/gbafix
+      OBJCOPY  = $(GBA_LLVM)/bin/llvm-objcopy
 
       # Flag : CC
       #	Use this flag to define compiler to use
@@ -45,11 +44,13 @@ ifdef COMPILE_WITH_LLVM
       #	Define any libraries needed for linking or other flags that should come at the end of the link line (e.g. linker scripts).
       #	Note : On certain platforms, the default clock_gettime implementation is supported but requires linking of librt.
       LFLAGS_END = -ltonc
-
 else
       ifeq ($(strip $(DEVKITARM)),)
       $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
       endif
+
+      GBAFIX   = gbafix
+      OBJCOPY  = arm-none-eabi-objcopy
 
       # Flag : CC
       #	Use this flag to define compiler to use
@@ -114,13 +115,13 @@ $(OPATH)$(PORT_DIR)/%$(OEXT) : %.s
 	$(AS) $(ASFLAGS) $< $(OBJOUT) $@
 
 # Target : port_pre% and port_post%
-# For the purpose of this simple port, no pre or post steps needed.
-
 .PHONY : port_prebuild port_postbuild port_prerun port_postrun port_preload port_postload
-port_pre% port_post% : 
+
+port_postbuild:
+	$(OBJCOPY) -O binary $(OUTNAME) coremark.gba
+	$(GBAFIX) coremark.gba
 
 # FLAG : OPATH
 # Path to the output folder. Default - current folder.
 OPATH = ./
 MKDIR = mkdir -p
-
