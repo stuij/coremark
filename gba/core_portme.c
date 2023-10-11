@@ -57,7 +57,7 @@ barebones_clock() {
         */
 #define GETMYTIME(_t)              (*_t = barebones_clock())
 #define MYTIMEDIFF(fin, ini)       ((fin) - (ini))
-#define CLOCKS_PER_SEC             16780000
+#define CLOCKS_PER_SEC             16777216
 #define TIMER_RES_DIVIDER          1
 #define SAMPLE_TIME_IMPLEMENTATION 1
 #define EE_TICKS_PER_SEC           (CLOCKS_PER_SEC / TIMER_RES_DIVIDER)

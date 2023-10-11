@@ -117,8 +117,8 @@ EXE = .bin
 
 PORT_CLEAN = *.o *.bin *.sav $(PORT_DIR)/*.o
 
-PORT_SRCS = $(PORT_DIR)/core_portme.c $(PORT_DIR)/ee_printf.c
-PORT_OBJS = $(PORT_DIR)/core_portme$(OEXT) $(PORT_DIR)/ee_printf$(OEXT)
+PORT_SRCS = $(PORT_DIR)/core_portme.c $(PORT_DIR)/ee_printf.c $(PORT_DIR)/cvt.c
+PORT_OBJS = $(PORT_DIR)/core_portme$(OEXT) $(PORT_DIR)/ee_printf$(OEXT) $(PORT_DIR)/cvt$(OEXT)
 
 LOAD = echo "Please set LOAD to the process of loading the executable to the flash"
 RUN = echo "Please set LOAD to the process of running the executable (e.g. via jtag, or board reset)"

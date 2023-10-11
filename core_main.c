@@ -377,6 +377,14 @@ for (i = 0; i < MULTITHREAD; i++)
         total_errors++;
     }
 
+#if HAS_FLOAT
+    if (known_id == 3)
+    {
+      ee_printf("CoreMark/MHz     : %f\n",
+                default_num_contexts * results[0].iterations
+                / time_in_secs(total_time) / 16.777216);
+    }
+#endif
     ee_printf("Iterations       : %lu\n",
               (long unsigned)default_num_contexts * results[0].iterations);
     ee_printf("Compiler version : %s\n", COMPILER_VERSION);
