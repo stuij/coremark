@@ -15,7 +15,7 @@ We print output to both the mGBA debug console as well as the screen.
 When compiling for GCC, a devkitPro installation is assumed:
 https://devkitpro.org
 
-When compiling for LLVM, agba-llvm-devkit installation is assumed:
+When compiling for LLVM, a gba-llvm-devkit installation is assumed:
 https://github.com/stuij/gba-llvm-devkit
 
 A typical invocation from the Coremark root dir is:
