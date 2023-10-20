@@ -115,7 +115,7 @@ vpath %.s $(PORT_DIR)
 OEXT = .$(CODE_MEM).o
 EXE = .bin
 
-PORT_CLEAN = *.o *.bin *.sav $(PORT_DIR)/*.o
+PORT_CLEAN = *.o *.bin *.sav *.gba $(PORT_DIR)/*.o
 
 PORT_SRCS = $(PORT_DIR)/core_portme.c $(PORT_DIR)/ee_printf.c $(PORT_DIR)/cvt.c
 PORT_OBJS = $(PORT_DIR)/core_portme$(OEXT) $(PORT_DIR)/ee_printf$(OEXT) $(PORT_DIR)/cvt$(OEXT)
