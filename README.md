@@ -1,3 +1,97 @@
+# Game Boy Advance (GBA) branch
+
+This branch of Coremark adds Game Boy Advance support for Coremark.
+
+
+### compiling
+
+When targetting the GBA, you can use either GCC or LLVM. You can toggle between
+them by setting `COMP_LLVM=1` (or 0). GCC is the default.
+
+The GBA build has a dependency on `libtonc` for printing to the GBA screen.
+
+We print output to both the mGBA debug console as well as the screen.
+
+When compiling for GCC, a devkitPro installation is assumed:
+https://devkitpro.org
+
+When compiling for LLVM, agba-llvm-devkit installation is assumed:
+https://github.com/stuij/gba-llvm-devkit
+
+A typical invocation from the Coremark root dir is:
+
+    make PORT_DIR=gba COMP_LLVM=1
+
+
+### turning knobs
+
+Several Makefile variables can be added to the cmdline to easier script runs
+with different parameters.
+
+A full list:
+
+- `CODE_MEM`: what memory does the code live in: iwram, ewram, rom
+  - ewram is currently not supported by GCC, but can be added by slightly tweaking the linker script
+  - rom is nop, as it's the default
+- `INSTR_SET`: compile for `arm` or `thumb`
+- `OPT_C`: Additional C optimization flags
+- `OPT_LEVEL`: -Ox
+- `COMP_LLVM`: 0 for GCC, 1 for Clang. GCC is default when COMP_LLVM is omitted.
+
+Example:
+
+    make PORT_DIR=gba CODE_MEM=iwram INSTR_SET=arm COMP_LLVM=1 \
+       OPT_C="-mllvm -inline-threshold=500" OPT_LEVEL=3
+
+
+### Coremark/MHz
+
+To immediately see the Coremark/MHz value, the Coremark code was slightly
+altered to do that calculation as part of the summary. However this requires
+floating point printing support , and this is currently broken for Thumb on LLVM
+(I believe this is just a Coremark printing issue, but still to be
+investigated). A temporary workaround is to set `HAS_FLOAT` to `0` in
+`gba/core_portme.h`.
+
+Coremark/MHz calculation:
+
+    iterations / (total ticks / ticks per second) / Mhz
+
+For the GBA ticks are measured in CPU cycles. The CPU runs at 16.777216 MHz, so
+ticks per second is: 16777216
+
+Example calculation (nrs taken from Coremark summary output) (again this is done for you when not compiling for Thumb on LLVM):
+
+    110 / (208612159 / 16777216) / 16.777216 = 0.52729
+
+
+### results
+
+Initial Coremark/MHz results:
+
+    | compile settings |      gcc |    clang |
+    |------------------+----------+----------|
+    | rom arm          | 0.377644 | 0.348422 |
+    | ewram arm        |          | 0.350522 |
+    | rom thumb        | 0.520429 | 0.411079 |
+    | ewram thumb      |          | 0.413445 |
+    | rom thumb unroll | 0.563485 | 0.481064 |
+    | rom thumb jumpth |          | 0.492934 |
+    | rom thumb more   |          | 0.527294 |
+    | iwram thumb      | 1.521745 | 1.191095 |
+    | iwram arm        | 1.899094 | 1.735995 |
+    | iwram arm (hw)   | 1.899087 | 1.735989 |
+    | iwram arm jumpth |          | 1.950470 |
+    | iwram arm more   |          | 2.098647 |
+
+legend:
+- `unroll`: for GCC: `-funroll-all-loops`, for LLVM: `-mllvm -unroll-count=8`
+- `jumpth`: GCC has better jumpthreading optimization out of the box, which has quite some impact on Coremark results. For LLVM we can enable this by setting `-mllvm -enable-dfa-jump-thread`
+- `more`: Besides jumpthreading (see above), we also tweak when we do loop unrolling and inlining
+    - `-mllvm -unroll-threshold=450`
+    - `-mllvm -inline-threshold=500`
+- `(hw)`: running the benchmark on actual hardware, instead of mGBA.
+
 
 # Introduction
 
